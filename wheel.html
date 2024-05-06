@@ -1,0 +1,194 @@
+<html>
+	<head>
+	<style>
+		html, body, #page {
+			margin:0;
+			padding:0;
+			overflow:hidden;
+		}
+	</style>
+	</head>
+
+	</body>
+	<canvas id="wheelCanvas" width="600" height="800" style= "display: block";></canvas>
+	<noscript>No script? :(</noscript>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+	<script>
+
+		//window.onload = function() {
+			const urlParams = new URLSearchParams(window.location.search);
+			console.log(urlParams.has("test"))
+
+			function parseParam(str) {
+				return String(str).replace(/[\r]/g, '')
+			}
+
+			var wheelOptions = parseParam(urlParams.get("options") || ("1\n2\n3\n4\n5\n6")).split("\n")
+			var wheelResult = parseParam(urlParams.get("result") || 1)
+
+			var canvas = document.getElementById("wheelCanvas");
+			//canvas.width = window.innerWidth;
+			//canvas.height = window.innerHeight;
+			var ctx = canvas.getContext("2d");
+
+			var colors = ["#B8D430", "#3AB745", "#029990", "#3501CB",
+					"#2E2C75", "#673A7E", "#CC0071", "#F80120",
+					"#F35B20", "#FB9A00", "#FFCC00", "#FEF200"];
+
+
+			if(urlParams.has("colors")) {
+				colors = parseParam(urlParams.get("colors")).split(",")
+				for(var i = 0; i < colors.length; i++) {
+					if(!colors[i].startsWith("#")) {
+						colors[i] = "#"+colors[i]
+					}
+				}
+				console.log(colors)
+			}
+
+			var segments = wheelOptions.length
+
+			var startAngle = 360 * segments;
+
+			var outsideRadius = 240;
+			var insideRadius = 20;
+			var textRadius = outsideRadius - 10
+
+			var requiredElapsed= 1/60;
+			var lastTime = 0
+
+			var fontSize = Number(urlParams.get("fontsize")) || 10
+
+			var arc = Math.PI / (segments/2);
+			var tween
+
+			startAngle = ((360 * 12) / Math.random()) * (Math.PI/180)
+
+			wheelOptions.sort(function(a, b){return 0.5 - Math.random()});
+
+			function getResultAngle(i) {
+				let resultAngle = (90 + (360/segments) * (i+1)) - (180/segments)
+				resultAngle = -(resultAngle-360)
+
+				return resultAngle * (Math.PI/180)
+			}
+
+			var resultAngle = 0
+			for(var i = 0; i < segments; i++) {
+				if(wheelOptions[i].toLowerCase().trim() == wheelResult.toLowerCase().trim()) {
+					resultAngle = getResultAngle(i)
+					resultAngle = resultAngle + ((Math.PI/segments) * (Math.random() - 0.5))
+				}
+			}
+			//startAngle = (arc*-3 + Math.PI/segments)
+			//startAngle = 360 * (Math.PI/180)
+			//startAngle = 0
+
+			//startAngle = 9999
+			var framesRendered = 0
+			var framesToReachGoal = 0
+
+			var waitTime = Number(urlParams.get("waittime") || 0.75)
+			if(urlParams.has("waitTime")) waitTime = Number(urlParams.get("waittime"))
+
+			function renderFrame(now) {
+				requestAnimationFrame(renderFrame);
+
+				now = Date.now()
+				if(!lastTime){lastTime=now;}
+				let elapsed = (now-lastTime) / 1000;
+				if(!elapsed || elapsed < 0 ||elapsed < requiredElapsed) {
+					return
+				}
+
+				if(tween) tween.update()
+
+				framesRendered++
+
+				if(urlParams.has("spin_debug")) {
+					startAngle += 1 * (Math.PI/180)
+				}
+				else {
+					if(framesRendered > 60 * 0.75) {
+						if(!tween) {
+							var wheelSpinTime = Number(urlParams.get("time") || 15) - 0.75
+							console.log(wheelSpinTime)
+
+							tweenTarget = {x:startAngle}
+							tween = new TWEEN.Tween(tweenTarget).to({x:resultAngle}, (1000 * wheelSpinTime)).start()
+							tween.easing(TWEEN.Easing.Quintic.Out)
+
+							tween.onUpdate(function (object) {
+								startAngle = object.x
+							})
+						}
+						//startAngle = resultAngle
+
+						/*
+						var speed = (resultAngle - startAngle) * (1/60)
+						//console.log(speed)
+						startAngle = startAngle + speed
+
+						//console.log(startAngle)
+						//console.log(resultAngle)
+
+						if(Math.abs(speed) < 0.00005) {
+							//startAngle = resultAngle
+							console.log(framesToReachGoal)
+						}
+						else framesToReachGoal++
+						*/
+					}
+				}
+
+				var arc = Math.PI / (segments/2);
+
+				var WIDTH = canvas.width
+				var HEIGHT = canvas.height
+
+				var x = WIDTH/2
+				var y = HEIGHT/2
+
+				ctx.clearRect(0, 0, canvas.width || WIDTH,canvas.height || HEIGHT);
+
+				for(var i = 0; i < segments; i++) {
+					var angle = startAngle + i * arc;
+					ctx.fillStyle = colors[i % colors.length];
+
+					ctx.save();
+					ctx.beginPath();
+					ctx.arc(x, y, outsideRadius, angle, angle + arc, false);
+					ctx.arc(x, y, insideRadius, angle + arc, angle, true);
+					ctx.stroke();
+					ctx.fill();
+
+					let text = i
+
+					ctx.fillStyle = "black";
+					ctx.font = fontSize+"px sans-serif"
+					ctx.translate(x + Math.cos(angle + arc / 2) * textRadius,
+									y + Math.sin(angle + arc / 2) * textRadius);
+					ctx.rotate(angle + arc / 2 + Math.PI);
+					ctx.fillText(wheelOptions[i], -ctx.measureText(text).width / 2, -4);
+					ctx.restore();
+				}
+				var arrowScale = 100
+				var arrowX = x
+				var arrowY = y - outsideRadius - arrowScale/4
+
+				// Arrow
+				ctx.fillStyle = "black";
+				ctx.beginPath();
+				ctx.moveTo(arrowX - arrowScale/2, arrowY);
+				ctx.lineTo(arrowX, arrowY + arrowScale/2);
+				ctx.lineTo(arrowX + arrowScale/2, arrowY);
+				ctx.closePath();
+				ctx.fill();
+
+				lastTime=now;
+			}
+			renderFrame()
+		//}
+	</script>
+	</body>
+</html>
