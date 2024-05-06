@@ -36,7 +36,7 @@
 
 			if(urlParams.has("colors")) {
 				colors = parseParam(urlParams.get("colors")).split(",")
-				for(var i = 1; i < colors.length; i++) {
+				for(var i = 0; i < colors.length; i) {
 					if(!colors[i].startsWith("#")) {
 						colors[i] = "#"+colors[i]
 					}
@@ -72,7 +72,7 @@
 			}
 
 			var resultAngle = 0
-			for(var i = 0; i < segments; i++) {
+			for(var i = 0; i < segments; i) {
 				if(wheelOptions[i].toLowerCase().trim() == wheelResult.toLowerCase().trim()) {
 					resultAngle = getResultAngle(i)
 					resultAngle = resultAngle + ((Math.PI/segments) * (Math.random() - 0.5))
@@ -149,7 +149,7 @@
 
 				ctx.clearRect(0, 0, canvas.width || WIDTH,canvas.height || HEIGHT);
 
-				for(var i = 0; i < segments; i++) {
+				for(var i = 0; i < segments; i) {
 					var angle = startAngle + i * arc;
 					ctx.fillStyle = colors[i % colors.length];
 
