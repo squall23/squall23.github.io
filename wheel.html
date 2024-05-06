@@ -36,7 +36,7 @@
 
 			if(urlParams.has("colors")) {
 				colors = parseParam(urlParams.get("colors")).split(",")
-				for(var i = 0; i < colors.length; i+) {
+				for(var i = 0; i < colors.length; i++) {
 					if(!colors[i].startsWith("#")) {
 						colors[i] = "#"+colors[i]
 					}
