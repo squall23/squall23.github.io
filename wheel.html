@@ -57,7 +57,7 @@
 			var requiredElapsed= 1/60;
 			var lastTime = 0
 
-			var fontSize = Number(urlParams.get("fontsize")) || 10
+			var fontSize = Number(urlParams.get("fontsize")) || 24
 
 			var arc = Math.PI / (segments/2);
 			var tween
@@ -169,7 +169,7 @@
 					ctx.translate(x + Math.cos(angle + arc / 2) * textRadius,
 									y + Math.sin(angle + arc / 2) * textRadius);
 					ctx.rotate(angle + arc / 2 + Math.PI);
-					ctx.fillText(wheelOptions[i], -ctx.measureText(text).width / 50, 0);
+					ctx.fillText(wheelOptions[i], -ctx.measureText(text).width / 10, 0);
 					ctx.restore();
 				}
 				var arrowScale = 100
