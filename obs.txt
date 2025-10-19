@@ -1,0 +1,7 @@
+drops.html in obs einfügen als browserquelle mit b/h 200x200
+Größe kann gezogen werden
+main drops wechseln automatisch
+
+Insert drops.html into obs as browser source with w/h 200x200
+Size can be dragged
+main drops change automatically
